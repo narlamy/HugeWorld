@@ -12,14 +12,33 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 
+static const float MAX_SPEED = 100000.0f;
+static const float MIN_SPEED = 100.0f;
+
+AShinbiPlayerController::AShinbiPlayerController()
+{
+	// set our turn rates for input
+	BaseTurnRate = 45.f;
+	BaseLookUpRate = 45.f;
+	Speed = MIN_SPEED;
+}
 
 void AShinbiPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
+	/*auto pawn = dynamic_cast<ACharacter*>(GetPawn());
+	if (pawn != nullptr)
+	{
+		auto mov = pawn->GetCharacterMovement();
+		if (mov != nullptr) {
+			NormalVelocity = mov->Velocity;
+
+			auto vel = *NormalVelocity.ToString();
+			UE_LOG(LogTemp, Log, TEXT("Velocity = %s"), vel);
+		}
+	}*/
+
 	
 	if (InputComponent != nullptr)
 	{
@@ -27,6 +46,8 @@ void AShinbiPlayerController::SetupInputComponent()
 		//check(InputComponent);
 		InputComponent->BindAction("Jump", IE_Pressed, this, &AShinbiPlayerController::Jump);
 		InputComponent->BindAction("Jump", IE_Released, this, &AShinbiPlayerController::StopJumping);
+
+		InputComponent->BindAction("Warp", IE_Pressed, this, &AShinbiPlayerController::Warp);
 
 		InputComponent->BindAxis("MoveForward", this, &AShinbiPlayerController::MoveForward);
 		InputComponent->BindAxis("MoveRight", this, &AShinbiPlayerController::MoveRight);
@@ -38,6 +59,8 @@ void AShinbiPlayerController::SetupInputComponent()
 		InputComponent->BindAxis("TurnRate", this, &AShinbiPlayerController::TurnAtRate);
 		InputComponent->BindAxis("LookUp", this, &AShinbiPlayerController::AddControllerPitchInput);
 		InputComponent->BindAxis("LookUpRate", this, &AShinbiPlayerController::LookUpAtRate);
+
+		InputComponent->BindAxis("Speed", this, &AShinbiPlayerController::SpeedUp);
 
 		//// handle touch devices
 		InputComponent->BindTouch(IE_Pressed, this, &AShinbiPlayerController::TouchStarted);
@@ -58,6 +81,31 @@ void AShinbiPlayerController::SetupInputComponent()
 //{
 //	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 //}
+
+
+
+void AShinbiPlayerController::Warp()
+{
+	if (++WarpIndex >= 2)
+		WarpIndex = 0;
+
+	switch (WarpIndex)
+	{
+	case 0:
+		break;
+
+	case 1:
+		break;
+
+	case 2:
+		break;
+
+	default:
+		break;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("WARP (%d)"), WarpIndex);
+}
 
 void AShinbiPlayerController::Jump()
 {
@@ -95,6 +143,38 @@ void AShinbiPlayerController::LookUpAtRate(float Rate)
 	// calculate delta for this frame from the rate information
 	GetPawn()->AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
+
+void AShinbiPlayerController::SpeedUp(float Rate)
+{
+	if (Rate != 0.0f)
+	{
+		Speed += Rate > 0.0f ? 100 : -100;
+
+		if (Speed > MAX_SPEED) Speed = MAX_SPEED;
+		else if (Speed < MIN_SPEED) Speed = MIN_SPEED;
+		
+		auto mov = dynamic_cast<ACharacter*>(GetPawn())->GetCharacterMovement();
+		if (mov != nullptr) {
+			mov->MaxWalkSpeed = Speed;
+
+			UE_LOG(LogTemp, Log, TEXT("MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+		}
+	}
+}
+
+//void AShinbiPlayerController::SpeedDown(float Rate)
+//{
+//	if (Rate != 0.0f && Speed > 600.0f)
+//	{
+//		Speed -= 100.0f;
+//
+//		auto mov = dynamic_cast<ACharacter*>(GetPawn())->GetCharacterMovement();
+//		if (mov != nullptr) {
+//			mov->MaxWalkSpeed = Speed;
+//			UE_LOG(LogTemp, Log, TEXT("MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+//		}
+//	}
+//}
 
 
 void AShinbiPlayerController::MoveForward(float Value)

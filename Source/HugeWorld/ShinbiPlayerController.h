@@ -43,7 +43,19 @@ private:
 
 	void StopJumping();
 
+	void Warp();
+
+	void SpeedUp(float Rate);
+	//void SpeedDown(float Rate);
+
+private:
+	int WarpIndex;
+	float Speed;
+	FVector NormalVelocity;
+
 public:
+	AShinbiPlayerController();
+
 	//virtual bool InputKey(FKey Key, EInputEvent EventType, float AmountDepressed, bool bGamepad) override;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
