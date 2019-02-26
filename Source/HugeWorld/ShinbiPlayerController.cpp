@@ -47,9 +47,20 @@ void AShinbiPlayerController::BeginPlay()
 		FConsoleVariableDelegate callback;
 		callback.BindLambda([this](IConsoleVariable* Var) 
 		{ 
+			// this 를 capture 해서 넘겼는데, 본 인스턴스가 날아갔다면 어떻게 되는 건가?
+			// 본 인스턴스 해제 시 ConsoleVariable에서 해제해야 하는 것이 깔끔하다.
 			this->OnChangeMoveSpeed(Var); 
 		});
 		conVar->AsVariable()->SetOnChangedCallback(callback);
+	}
+}
+
+void AShinbiPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	auto conVar = IConsoleManager::Get().FindConsoleVariable(CONSOLE_MOVE_SPEED);
+	if (conVar != nullptr)
+	{
+		IConsoleManager::Get().UnregisterConsoleObject(conVar);
 	}
 }
 
