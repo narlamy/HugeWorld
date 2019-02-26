@@ -11,9 +11,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/Engine.h"
+#include "IConsoleManager.h"
 
-static const float MAX_SPEED = 100000.0f;
-static const float MIN_SPEED = 100.0f;
+static const float MAX_SPEED = 500000.0f;
+static const float MIN_SPEED = 200.0f;
 
 AShinbiPlayerController::AShinbiPlayerController()
 {
@@ -23,23 +26,42 @@ AShinbiPlayerController::AShinbiPlayerController()
 	Speed = MIN_SPEED;
 }
 
+AShinbiPlayerController::~AShinbiPlayerController()
+{
+	if(CMyVarSink!= nullptr)
+	{
+		try
+		{
+			IConsoleManager::Get().UnregisterConsoleVariableSink_Handle(CMyVarSink->Handle);
+		}
+		catch (...)
+		{
+		}
+		delete CMyVarSink;
+		CMyVarSink = nullptr;
+	}
+}
+
+void AShinbiPlayerController::BeginPlay()
+{
+	auto conVar = IConsoleManager::Get().FindConsoleVariable(TEXT("MoveSpeed"));
+
+	if(conVar!=nullptr)
+	{	
+		CallbackMoveSpeed.BindLambda([this](IConsoleVariable* Var) { this->OnChangeMoveSpeed(Var); });
+		conVar->AsVariable()->SetOnChangedCallback(CallbackMoveSpeed);
+	}
+}
+
+void AShinbiPlayerController::OnChangeMoveSpeed(IConsoleVariable* Var)
+{
+	SetMoveSpeed(Var->GetFloat());
+}
+
 void AShinbiPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	/*auto pawn = dynamic_cast<ACharacter*>(GetPawn());
-	if (pawn != nullptr)
-	{
-		auto mov = pawn->GetCharacterMovement();
-		if (mov != nullptr) {
-			NormalVelocity = mov->Velocity;
-
-			auto vel = *NormalVelocity.ToString();
-			UE_LOG(LogTemp, Log, TEXT("Velocity = %s"), vel);
-		}
-	}*/
-
-	
 	if (InputComponent != nullptr)
 	{
 		//// Set up gameplay key bindings
@@ -51,7 +73,7 @@ void AShinbiPlayerController::SetupInputComponent()
 
 		InputComponent->BindAxis("MoveForward", this, &AShinbiPlayerController::MoveForward);
 		InputComponent->BindAxis("MoveRight", this, &AShinbiPlayerController::MoveRight);
-
+		
 		//// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 		//// "turn" handles devices that provide an absolute delta, such as a mouse.
 		//// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
@@ -70,19 +92,6 @@ void AShinbiPlayerController::SetupInputComponent()
 		//InputComponent->BindAction("ResetVR", IE_Pressed, this, &ASampleContorlCharacter::OnResetVR);
 	}
 }
-
-//bool AShinbiPlayerController::InputKey(FKey Key, EInputEvent EventType, float AmountDepressed, bool bGamepad)
-//{
-//	return Super::InputKey(Key, EventType, AmountDepressed, bGamepad);
-//}
-
-
-//void AShinbiPlayerController::OnResetVR()
-//{
-//	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
-//}
-
-
 
 void AShinbiPlayerController::Warp()
 {
@@ -144,38 +153,36 @@ void AShinbiPlayerController::LookUpAtRate(float Rate)
 	GetPawn()->AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-void AShinbiPlayerController::SpeedUp(float Rate)
+void AShinbiPlayerController::SetMoveSpeed(float speed)
 {
-	if (Rate != 0.0f)
+	UE_LOG(LogTemp, Log, TEXT("SetMoveSpeed()"));
+
+	if (Speed != speed)
 	{
-		Speed += Rate > 0.0f ? 100 : -100;
+		Speed = speed;
 
 		if (Speed > MAX_SPEED) Speed = MAX_SPEED;
 		else if (Speed < MIN_SPEED) Speed = MIN_SPEED;
-		
-		auto mov = dynamic_cast<ACharacter*>(GetPawn())->GetCharacterMovement();
-		if (mov != nullptr) {
-			mov->MaxWalkSpeed = Speed;
 
-			UE_LOG(LogTemp, Log, TEXT("MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+		auto mov = dynamic_cast<ACharacter*>(GetPawn())->GetCharacterMovement();
+		if (mov != nullptr) 
+		{
+			mov->MaxWalkSpeed = Speed;
+			
+			UE_LOG(LogTemp, Log, TEXT("SetMoveSpeed() : MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("SetMoveSpeed()"));
 		}
 	}
 }
 
-//void AShinbiPlayerController::SpeedDown(float Rate)
-//{
-//	if (Rate != 0.0f && Speed > 600.0f)
-//	{
-//		Speed -= 100.0f;
-//
-//		auto mov = dynamic_cast<ACharacter*>(GetPawn())->GetCharacterMovement();
-//		if (mov != nullptr) {
-//			mov->MaxWalkSpeed = Speed;
-//			UE_LOG(LogTemp, Log, TEXT("MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
-//		}
-//	}
-//}
-
+void AShinbiPlayerController::SpeedUp(float Rate)
+{
+	if (Rate != 0.0f)
+	{
+		SetMoveSpeed(Speed + Rate);
+	}
+}
 
 void AShinbiPlayerController::MoveForward(float Value)
 {

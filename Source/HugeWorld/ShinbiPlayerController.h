@@ -46,15 +46,19 @@ private:
 	void Warp();
 
 	void SpeedUp(float Rate);
-	//void SpeedDown(float Rate);
+
+	void OnChangeMoveSpeed(IConsoleVariable* Var);
 
 private:
-	int WarpIndex;
-	float Speed;
+	int WarpIndex = 0;
+	float Speed = 0.0f;
 	FVector NormalVelocity;
+	FAutoConsoleVariableSink* CMyVarSink;
+	FConsoleVariableDelegate CallbackMoveSpeed;
 
 public:
 	AShinbiPlayerController();
+	~AShinbiPlayerController();
 
 	//virtual bool InputKey(FKey Key, EInputEvent EventType, float AmountDepressed, bool bGamepad) override;
 
@@ -65,6 +69,12 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
+
+	void SetMoveSpeed(float speed);
+
+	//FConsoleCommandDelegate ConsoleCommandDelegate;
+
+	virtual void BeginPlay() override;
 
 protected:
 	virtual void SetupInputComponent() override;

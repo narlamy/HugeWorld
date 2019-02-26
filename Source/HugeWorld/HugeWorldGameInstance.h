@@ -13,5 +13,7 @@ UCLASS()
 class HUGEWORLD_API UHugeWorldGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+	UHugeWorldGameInstance();	
 };
