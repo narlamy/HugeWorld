@@ -169,9 +169,10 @@ void AShinbiPlayerController::SetMoveSpeed(float speed)
 		{
 			mov->MaxWalkSpeed = Speed;
 			
-			UE_LOG(LogTemp, Log, TEXT("SetMoveSpeed() : MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+			auto s = FString::Printf(TEXT("SetMoveSpeed(%f)"), mov->MaxWalkSpeed);
 
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("SetMoveSpeed()"));
+			UE_LOG(LogTemp, Log, TEXT("SetMoveSpeed() : MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, s);
 		}
 	}
 }
