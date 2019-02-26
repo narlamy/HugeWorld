@@ -53,9 +53,7 @@ private:
 	int WarpIndex = 0;
 	float Speed = 0.0f;
 	FVector NormalVelocity;
-	FAutoConsoleVariableSink* CMyVarSink;
-	FConsoleVariableDelegate CallbackMoveSpeed;
-
+	
 public:
 	AShinbiPlayerController();
 	~AShinbiPlayerController();

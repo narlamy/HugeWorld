@@ -18,18 +18,6 @@
 static const float MAX_SPEED = 500000.0f;
 static const float MIN_SPEED = 200.0f;
 
-static const TCHAR* CONSOLE_MOVE_SPEED = TEXT("MoveSpeed");
-
-//================================================================================
-// 콘솔 변수 (Console variables)
-//================================================================================
-static TAutoConsoleVariable<float> CVarRefractionQuality(
-	CONSOLE_MOVE_SPEED,
-	1000,
-	TEXT("Change character movement speed\n")
-	TEXT("range : [200, 500000]"),
-	ECVF_Scalability | ECVF_RenderThreadSafe);
-
 AShinbiPlayerController::AShinbiPlayerController()
 {
 	// set our turn rates for input
@@ -40,28 +28,28 @@ AShinbiPlayerController::AShinbiPlayerController()
 
 AShinbiPlayerController::~AShinbiPlayerController()
 {
-	if(CMyVarSink!= nullptr)
-	{
-		try
-		{
-			IConsoleManager::Get().UnregisterConsoleVariableSink_Handle(CMyVarSink->Handle);
-		}
-		catch (...)
-		{
-		}
-		delete CMyVarSink;
-		CMyVarSink = nullptr;
-	}
 }
+
+static const TCHAR* CONSOLE_MOVE_SPEED = TEXT("MoveSpeed");
 
 void AShinbiPlayerController::BeginPlay()
 {
-	auto conVar = IConsoleManager::Get().FindConsoleVariable(CONSOLE_MOVE_SPEED);
+	auto conVar = IConsoleManager::Get().RegisterConsoleVariable(
+		CONSOLE_MOVE_SPEED,
+		1000,
+		TEXT("Change character movement speed\n")
+		TEXT("range : [200, 500000]"),
+		ECVF_Scalability | ECVF_RenderThreadSafe
+	);
 
 	if(conVar!=nullptr)
 	{	
-		CallbackMoveSpeed.BindLambda([this](IConsoleVariable* Var) { this->OnChangeMoveSpeed(Var); });
-		conVar->AsVariable()->SetOnChangedCallback(CallbackMoveSpeed);
+		FConsoleVariableDelegate callback;
+		callback.BindLambda([this](IConsoleVariable* Var) 
+		{ 
+			this->OnChangeMoveSpeed(Var); 
+		});
+		conVar->AsVariable()->SetOnChangedCallback(callback);
 	}
 }
 
