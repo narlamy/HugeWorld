@@ -5,15 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
 
-//================================================================================
-// 콘솔 변수 (Console variables)
-//================================================================================
-static TAutoConsoleVariable<float> CVarRefractionQuality(
-	TEXT("MoveSpeed"),
-	1000,
-	TEXT("Change character movement speed\n")
-	TEXT("range : [200, 500000]"),
-	ECVF_Scalability | ECVF_RenderThreadSafe);
+
 
 //================================================================================
 UHugeWorldGameInstance::UHugeWorldGameInstance()

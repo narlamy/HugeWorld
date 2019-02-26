@@ -18,6 +18,18 @@
 static const float MAX_SPEED = 500000.0f;
 static const float MIN_SPEED = 200.0f;
 
+static const TCHAR* CONSOLE_MOVE_SPEED = TEXT("MoveSpeed");
+
+//================================================================================
+// 콘솔 변수 (Console variables)
+//================================================================================
+static TAutoConsoleVariable<float> CVarRefractionQuality(
+	CONSOLE_MOVE_SPEED,
+	1000,
+	TEXT("Change character movement speed\n")
+	TEXT("range : [200, 500000]"),
+	ECVF_Scalability | ECVF_RenderThreadSafe);
+
 AShinbiPlayerController::AShinbiPlayerController()
 {
 	// set our turn rates for input
@@ -44,7 +56,7 @@ AShinbiPlayerController::~AShinbiPlayerController()
 
 void AShinbiPlayerController::BeginPlay()
 {
-	auto conVar = IConsoleManager::Get().FindConsoleVariable(TEXT("MoveSpeed"));
+	auto conVar = IConsoleManager::Get().FindConsoleVariable(CONSOLE_MOVE_SPEED);
 
 	if(conVar!=nullptr)
 	{	
@@ -171,7 +183,7 @@ void AShinbiPlayerController::SetMoveSpeed(float speed)
 			
 			auto s = FString::Printf(TEXT("SetMoveSpeed(%f)"), mov->MaxWalkSpeed);
 
-			UE_LOG(LogTemp, Log, TEXT("SetMoveSpeed() : MaxWalkSpeed = %f"), mov->MaxWalkSpeed);
+			UE_LOG(LogTemp, Log, TEXT("SetMoveSpeed() : MaxWalkSpeed = %f"), mov->MaxWalkSpeed);			
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, s);
 		}
 	}
